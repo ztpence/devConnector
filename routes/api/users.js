@@ -8,6 +8,7 @@ const passport = require("passport");
 
 // Load Input Validation
 const validateRegisterInput = require("../../validation/register"); // bringing in register errors object logic
+const validateLoginInput = require("../../validation/login"); // bringing in login errors object logic
 
 // Load User Model -- Bringing in mongoose schema to check existing info(email)
 const User = require("../../models/User");
@@ -79,6 +80,14 @@ router.post("/register", (req, res) => {
 // Creating the JWT (---video Section 3 video 4)
 // post request -- user sends form that has email and password
 router.post("/login", (req, res) => {
+  const { errors, isValid } = validateLoginInput(req.body); //must check for all req going back using destructuring
+
+  // Check Validation
+  if (!isValid) {
+    //not valid
+    return res.status(400).json(errors); // if errors it will return an object with the errors inside
+  }
+
   const email = req.body.email;
   const password = req.body.password;
 
@@ -86,7 +95,8 @@ router.post("/login", (req, res) => {
   User.findOne({ email }).then(user => {
     // instead of {email: email} use ES6 and just {email}
     if (!user) {
-      return res.status(404).json({ email: "User not found" }); // error status 404 is not found
+      errors.email = 'User not found'
+      return res.status(404).json(errors); // error status 404 is not found
     }
 
     // Check Password ( function arguments - password is plain text password and user.password is the hashed encrypted password )
@@ -102,7 +112,7 @@ router.post("/login", (req, res) => {
         jwt.sign(
           payload,
           keys.secretOrKey, // dont want to put key in code so put in keys file and require the file in
-          { expiresIn: 3600 }, // expires the user token so user will have to log back in (3600 is on hour)
+          { expiresIn: 3600 }, // expires the user token so user will have to log back in (3600 is one hour)
           (err, token) => {
             // call back function that gives an error or token
             res.json({
@@ -113,7 +123,8 @@ router.post("/login", (req, res) => {
           }
         );
       } else {
-        return res.status(400).json({ password: "Password incorrect" });
+        errors.password = 'Password incorrect';
+        return res.status(400).json(errors);
       }
     });
   });
