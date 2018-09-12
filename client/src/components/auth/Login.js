@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import axios from "axios";
+import classnames from "classnames"; // this will allow the variable of bootstrap error text by creating a variable of className when needed by errors in form fields
 
 class Login extends Component {
 
@@ -26,7 +28,11 @@ onSubmit(e) {
     password: this.state.password,
   };
 
-  console.log(user);
+  //console.log(user);
+  // with axios will make login request with onSubmit with user being the data 
+  axios.post('/api/users/login' , user) // will have to put http://localhost/5000 if not using proxy value
+  .then(res => console.log(res.data))
+  .catch(err => this.setState({errors: err.response.data}));//this will set errors to the state errors object
 }
 
   render() {
@@ -37,7 +43,7 @@ onSubmit(e) {
         <div className="row">
           <div className="col-md-8 m-auto">
             <h1 className="display-4 text-center">Log In</h1>
-            <p className="lead text-center">Sign in to your Player account</p>
+            <p className="lead text-center">Sign in to your Player Profile</p>
             <form onSubmit={this.onSubmit}>
               <div className="form-group">
                 <input 
